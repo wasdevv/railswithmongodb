@@ -11,6 +11,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :auth do
+    member do
+      post 'login', to: "auth#login", as: :login
+    end
+  end
+
   # Defines the root path route ("/")
   # root "posts#index"
 end

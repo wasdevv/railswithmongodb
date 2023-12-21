@@ -2,3 +2,9 @@
   <p>Usuários <strong>disponíveis</strong></p>
 </div>
 
+<div>
+  <% @users.each do |user| %>
+    <%= user.username %>
+    <%= user.email %>
+  <% end %>
+</div>
