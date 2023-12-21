@@ -1,6 +1,9 @@
 class UsersController < ApplicationController
-    before_action :index, only: [:updateUser, :deleteUser]
-
+    before_action :index, only: [:updateUser, :deleteUser, :showUser]
+    
+    before_action only: [:updateUser, :delete_User] do
+        check_token
+    end
     # index
     def index
         @users = User.all
@@ -9,6 +12,7 @@ class UsersController < ApplicationController
     # new/create
     def addUser
         user = User.new(user_params)
+        user.type = 1 # default 1
         
         if user.save
             render  json: user, status: :ok

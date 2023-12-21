@@ -3,37 +3,44 @@ require 'base64'
 
 module Encryptor
 
-    def secret_key1
-        return 'your-key-here-1'
-    end
+    KEY = 'your-key-here'
+    ITERATIONS = 20_000
+    KEY_LEN = 128
+    CIPHER = 'AES-128-ECB'
 
-    def secret_key2
-        return 'your-key-here-2'
-    end
-
-    def encrypt_string(str)
-        begin
-            cipher_secret_key1 = secret_key1;
-            cipher_secret_key2 = secret_key2;
-            cipher = OPENSSL::Cipher.new('AES-128-EC8').encrypt;
-            cipher.key = OPENSSL::PKCSS.pbkdf2_hmac.shal1(cipher_secret_key1, cipher_secret_key2, 20_000, cipher.key_len);
-            encrypted = cipher.update(str) + cipher.final;
-            Base64.encode64(encrypted).strip;
-        rescue
-            return false
-        end
+    def self.encrypt_string(str)
+        cipher = OpenSSL::Cipher.new(CIPHER).encrypt
+        cipher.key = OpenSSL::PKCS5.pbkdf2_hmac_sha1(KEY, KEY, ITERATIONS, KEY_LEN)
+        encrypted = cipher.update(str) + cipher.final
+        Base64.encode64(encrypted).strip
     end
 
     def decrpt_string(encrypted_str)
+        unless encrypted_str.is_a?(String)
+            raise ArgumentError, 'Encrypted string must be a String'
+        end
+
         begin
-            cipher_secret_key1 = secret_key1;
-            cipher_secret_key2 = secret_key2;
-            cipher = OPENSSL::Cipher.new('AES-128-EC8').decrypt;
-            cipher.key = OpenSSL::PKCS5.pbkdf2_hmac_sha1(cipher_salt1, cipher_salt2, 20_000, cipher.key_len);
-            decoded_encrypted_str = Base64.decode64(encrypted_str);
-            decrypted = cipher.update(decoded_encrypted_str) + cipher.final;
-        rescue
+            # Decode the base64 encrypted string
+            decoded_encrypted_str = Base64.decode64(encrypted_str)
+    
+            # Create a new cipher object for decryption
+            cipher = OpenSSL::Cipher.new(CIPHER).decrypt
+    
+            # Derive the key and IV from the secret keys and salts
+            cipher.key = OpenSSL::PKCS5.pbkdf2_hmac_sha1(KEY, KEY, ITERATIONS, KEY_LEN)
+    
+            # Decrypt the encrypted string
+            decrypted = cipher.update(decoded_encrypted_str) + cipher.final
+        rescue ArgumentError => e
+            # Handle argument errors
+            puts "Error: #{e.message}"
+            return false
+        rescue OpenSSL::Cipher::CipherError => e
+            # Handle decryption errors
+            puts "Error: #{e.message}"
             return false
         end
+        decrypted
     end
 end

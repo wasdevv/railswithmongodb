@@ -1,8 +1,10 @@
+require 'Encryptor'
+
 module TokenManager
     include Encryptor
 
-    def generate_token(user_id, username, userType)
-        extime = (Time.now + set_day(2)).to_i
+    def self.generate_token(user_id, username, userType)
+        extime = (Time.now + 86400 * 2 ).to_i
         token = encrypt_string(user_id) + '.' + encrypted_string(username) + '.' + encrypted_string(userType) + '.' + 
         encrypted_string(extime.to_s)
 
@@ -27,12 +29,6 @@ module TokenManager
                 decry[:token_ex] = decrypt_string(item)
             end
         end
-        return d
-    end
-
-    private
-
-    def set_day(day = 1)
-        return 86400 = day_to.i
+        return decry
     end
 end
